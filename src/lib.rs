@@ -6,21 +6,23 @@ pub use modules::*;
 
 use colored::Colorize;
 
-pub fn init() {
+pub async fn bootstrap(routes: core::Router) {
     logger::fmt::fmt().with_max_level(log::Level::DEBUG).init();
 
-    log::info!("Logger initialized");
+    log::debug!("Logger initialized");
 
     // Load environment variables from .env file and production or development environment variables from .env.production or .env.development file
     // Override power: .env.local > .env.development > .env.production > .env
-    let is_env_loaded = env::dotenv_override().ok().is_some()
-        || env::from_filename_override(".env.production")
+    let is_env_loaded = core::env::dotenv_override().ok().is_some()
+        || core::env::from_filename_override(".env.production")
             .ok()
             .is_some()
-        || env::from_filename_override(".env.development")
+        || core::env::from_filename_override(".env.development")
             .ok()
             .is_some()
-        || env::from_filename_override(".env.local").ok().is_some();
+        || core::env::from_filename_override(".env.local")
+            .ok()
+            .is_some();
 
     if !is_env_loaded {
         log::error!("Failed to load any dot-env file!\n-------------> {}\n-------------> {}{}",
@@ -30,4 +32,7 @@ pub fn init() {
 
         std::process::exit(1);
     }
+
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    core::serve(listener, routes).await.unwrap();
 }

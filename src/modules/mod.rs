@@ -1,9 +1,5 @@
 pub mod core;
 
-pub mod env {
-    pub use dotenvy::*;
-}
-
 pub mod log {
     pub use tracing::*;
 }
