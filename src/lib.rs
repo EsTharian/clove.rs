@@ -4,7 +4,7 @@ mod modules;
 
 pub use modules::*;
 
-pub async fn bootstrap(provider: [core::Provider; 5]) {
+pub async fn bootstrap(provider: Vec<core::Provider>) {
     core::env::load_env();
 
     tracing::init();

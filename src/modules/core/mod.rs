@@ -7,11 +7,13 @@ pub struct Provider {
     pub routes: Router,
 }
 
-pub async fn run_server(provider: [Provider; 5]) -> Result<(), std::io::Error> {
+pub async fn run_server(provider: Vec<Provider>) -> Result<(), std::io::Error> {
     const DEFAULT_HOST: &str = "0";
     const DEFAULT_PORT: &str = "3000";
 
-    let router = Router::new().merge(provider[0].routes.clone());
+    let provided_routes = provider.iter().fold(Router::new(), |acc, provided| {
+        acc.merge(provided.routes.clone())
+    });
 
     let host = std::env::var("APP_HOST")
         .unwrap_or(DEFAULT_HOST.to_string())
@@ -25,7 +27,7 @@ pub async fn run_server(provider: [Provider; 5]) -> Result<(), std::io::Error> {
         .await
         .unwrap();
 
-    serve(listener, router)
+    serve(listener, provided_routes)
         .with_graceful_shutdown(async {
             tokio::signal::ctrl_c()
                 .await
