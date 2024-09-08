@@ -1,18 +1,14 @@
 pub use axum::*;
 
 pub mod env;
+pub mod route;
 
-pub struct Provider {
-    pub name: &'static str,
-    pub routes: Router,
-}
-
-pub async fn run_server(provider: Vec<Provider>) -> Result<(), std::io::Error> {
+pub async fn run_server(provider: Vec<route::Provider>) -> Result<(), std::io::Error> {
     const DEFAULT_HOST: &str = "0";
     const DEFAULT_PORT: &str = "3000";
 
     let provided_routes = provider.iter().fold(Router::new(), |acc, provided| {
-        acc.merge(provided.routes.clone())
+        acc.merge(route::router(&provided.routes))
     });
 
     let host = std::env::var("APP_HOST")
